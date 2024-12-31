@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\AnimalRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AnimalRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 class Animal
@@ -13,12 +14,15 @@ class Animal
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["animals:read"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
+    #[Groups(["animals:read"])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["animals:read"])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'animaux')]
