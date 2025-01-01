@@ -32,7 +32,7 @@ class AnimalController extends AbstractController
 
 
     #[Route('/', name: 'get_animals', methods: 'GET')]
-    public function show(): JsonResponse
+    public function getAnimals(): JsonResponse
     {
         $animals = $this->em->getRepository(Animal::class)->findAll();
         if (!$animals) {
@@ -44,7 +44,7 @@ class AnimalController extends AbstractController
 
 
     #[Route('/{id}', name: 'get_Animal', methods: 'GET', requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function showOne(Animal $animal): JsonResponse
+    public function getAnimal(Animal $animal): JsonResponse
     {
 
         return $this->json($animal, JsonResponse::HTTP_OK, [], ['groups' => ['animals:read']]);
@@ -55,11 +55,11 @@ class AnimalController extends AbstractController
     #[Route('/add', name: 'add_Animal', methods: 'POST')]
     public function addAnimal(Request $request): JsonResponse
     {
-        $animalSerialized = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
+        $animalDTO = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
 
         $animal = new Animal();
-        $animal->setNom($animalSerialized->getNom());
-        $animal->setDescription($animalSerialized->getDescription());
+        $animal->setNom($animalDTO->getNom());
+        $animal->setDescription($animalDTO->getDescription());
 
         $data = json_decode($request->getContent(), true);
         $idHabitat = $data['habitatId'];

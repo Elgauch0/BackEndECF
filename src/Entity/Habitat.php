@@ -29,6 +29,7 @@ class Habitat
      * @var Collection<int, animal>
      */
     #[ORM\OneToMany(targetEntity: animal::class, mappedBy: 'habitat', orphanRemoval: true)]
+    #[Groups(["habitat:read"])]
 
     private Collection $animaux;
 
