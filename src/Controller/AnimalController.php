@@ -89,7 +89,7 @@ class AnimalController extends AbstractController
         );
         $this->em->flush();
 
-        return $this->json(null, JsonResponse::HTTP_ACCEPTED);
+        return $this->json(['message' => 'animal edited'], JsonResponse::HTTP_ACCEPTED);
     }
     /**
      * { method PUT
@@ -105,6 +105,6 @@ class AnimalController extends AbstractController
     {
         $this->em->remove($animal);
         $this->em->flush();
-        return $this->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return $this->json(['message' => 'animal removed'], JsonResponse::HTTP_NO_CONTENT);
     }
 }

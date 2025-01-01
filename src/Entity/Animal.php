@@ -14,7 +14,7 @@ class Animal
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["animals:read", "habitat:read"])]
+    #[Groups(["animals:read", "habitat:read", "rapport:read"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]

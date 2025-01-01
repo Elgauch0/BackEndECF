@@ -48,7 +48,7 @@ class HabitatController extends AbstractController
         $this->em->persist($habitatDTO);
         $this->em->flush();
 
-        return $this->json(null, JsonResponse::HTTP_CREATED);
+        return $this->json(['message' => 'habitat created'], JsonResponse::HTTP_CREATED);
     }
 
 
@@ -59,7 +59,7 @@ class HabitatController extends AbstractController
         $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
         $this->em->flush();
 
-        return $this->json(null, JsonResponse::HTTP_ACCEPTED);
+        return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);
     }
 
 
@@ -69,7 +69,7 @@ class HabitatController extends AbstractController
     {
         $this->em->remove($habitat);
         $this->em->flush();
-        return $this->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return $this->json(['message' => 'habitat removed'], JsonResponse::HTTP_NO_CONTENT);
     }
 
 

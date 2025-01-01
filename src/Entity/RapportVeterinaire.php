@@ -2,8 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\RapportVeterinaireRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\RapportVeterinaireRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: RapportVeterinaireRepository::class)]
 class RapportVeterinaire
@@ -11,15 +12,19 @@ class RapportVeterinaire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["rapport:read"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
+    #[Groups(["rapport:read"])]
     private ?string $etat = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(["rapport:read"])]
     private ?string $nourriture = null;
 
     #[ORM\Column]
+    #[Groups(["rapport:read"])]
     private ?\DateTimeImmutable $passage_Date = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -27,6 +32,7 @@ class RapportVeterinaire
 
     #[ORM\ManyToOne(inversedBy: 'rapport_vet')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["rapport:read"])]
     private ?Animal $animal = null;
 
     public function getId(): ?int
