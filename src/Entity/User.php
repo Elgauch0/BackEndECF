@@ -27,6 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles 
      */
     #[ORM\Column]
+    #[Groups(["users:read"])]
     private array $roles = [];
 
     /** 
