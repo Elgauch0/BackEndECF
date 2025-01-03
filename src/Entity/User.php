@@ -7,6 +7,7 @@ use App\Repository\UserRepository;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -21,6 +22,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     #[Groups(["users:read"])]
+    #[Assert\Email(message: "L'adresse e-mail n'est pas valide.")]
     private ?string $email = null;
 
     /** 
@@ -34,14 +36,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password 
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le mot de passe ne peut pas être vide.")]
+    #[Assert\Length(
+        min: 8,
+        max: 64,
+        minMessage: "Le mot de passe doit contenir au moins 8 caractères.",
+        maxMessage: "Le mot de passe ne peut pas dépasser 64 caractères."
+    )]
     private ?string $password = null;
 
     #[ORM\Column(length: 50)]
     #[Groups(["users:read"])]
-    private ?string $prénom = null;
+    #[Assert\Length(
+        min: 5,
+        max: 60,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 60 caractères."
+    )]
+    private ?string $prenom = null;
 
     #[ORM\Column(length: 50)]
     #[Groups(["users:read"])]
+    #[Assert\Length(
+        min: 5,
+        max: 60,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 60 caractères."
+    )]
     private ?string $nom = null;
 
     public function getId(): ?int
@@ -115,14 +136,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getPrénom(): ?string
+    public function getPrenom(): ?string
     {
-        return $this->prénom;
+        return $this->prenom;
     }
 
-    public function setPrénom(string $prénom): static
+    public function setPrenom(string $prenom): static
     {
-        $this->prénom = $prénom;
+        $this->prenom = $prenom;
         return $this;
     }
 

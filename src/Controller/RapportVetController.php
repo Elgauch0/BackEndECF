@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -20,10 +21,12 @@ class RapportVetController extends AbstractController
 
     private $em;
     private $serializer;
-    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer)
+    private $validator;
+    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->serializer = $serializer;
+        $this->validator = $validator;
     }
 
 
@@ -56,6 +59,11 @@ class RapportVetController extends AbstractController
         $rapport->setPassageDate(new DateTimeImmutable());
         $rapport->setAnimal($this->em->getRepository(Animal::class)->find($idanimal));
 
+        $errors = $this->validator->validate($rapport);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
+
         $this->em->persist($rapport);
         $this->em->flush();
 
@@ -72,6 +80,11 @@ class RapportVetController extends AbstractController
         $idAnimal = $data['animalId'];
         $rapport->setAnimal($this->em->getRepository(Animal::class)->find($idAnimal));
         $rapport->setPassageDate(new DateTimeImmutable());
+
+        $errors = $this->validator->validate($rapport);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
         $this->em->flush();
 
 

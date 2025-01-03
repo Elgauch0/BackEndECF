@@ -7,6 +7,7 @@ use App\Repository\HabitatRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: HabitatRepository::class)]
 class Habitat
@@ -19,10 +20,22 @@ class Habitat
 
     #[ORM\Column(length: 60)]
     #[Groups(["habitat:read"])]
+    #[Assert\Length(
+        min: 5,
+        max: 60,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 60 caractères."
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(["habitat:read"])]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 255 caractères."
+    )]
     private ?string $description = null;
 
     /**

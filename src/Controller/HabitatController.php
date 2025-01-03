@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -17,10 +18,12 @@ class HabitatController extends AbstractController
 {
     private $em;
     private $serializer;
-    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer)
+    private $validator;
+    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->serializer = $serializer;
+        $this->validator = $validator;
     }
 
 
@@ -41,10 +44,15 @@ class HabitatController extends AbstractController
 
 
     #[Route('/add', name: 'add_Habitat', methods: 'POST')]
-    public function addHabit(Request $request): JsonResponse
+    public function addHabitat(Request $request): JsonResponse
     {
 
         $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json');
+
+        $errors = $this->validator->validate($habitatDTO);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
         $this->em->persist($habitatDTO);
         $this->em->flush();
 
@@ -57,6 +65,10 @@ class HabitatController extends AbstractController
     {
 
         $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
+        $errors = $this->validator->validate($habitatDTO);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
         $this->em->flush();
 
         return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);

@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\RapportVeterinaireRepository;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RapportVeterinaireRepository::class)]
 class RapportVeterinaire
@@ -17,10 +18,22 @@ class RapportVeterinaire
 
     #[ORM\Column(length: 60)]
     #[Groups(["rapport:read"])]
+    #[Assert\Length(
+        min: 5,
+        max: 60,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 60 caractères."
+    )]
     private ?string $etat = null;
 
     #[ORM\Column(length: 100)]
     #[Groups(["rapport:read"])]
+    #[Assert\Length(
+        min: 5,
+        max: 100,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 100 caractères."
+    )]
     private ?string $nourriture = null;
 
     #[ORM\Column]
@@ -28,6 +41,12 @@ class RapportVeterinaire
     private ?\DateTimeImmutable $passage_Date = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: "Le champ doit contenir au moins 5 caractères.",
+        maxMessage: "Le champ ne peut pas dépasser 255 caractères."
+    )]
     private ?string $autreDetail = null;
 
     #[ORM\ManyToOne(inversedBy: 'rapport_vet')]

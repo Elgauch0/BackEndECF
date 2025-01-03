@@ -22,14 +22,14 @@ class AppFixtures extends Fixture
         $hashedPassword = $this->passwordHasher->hashPassword($admin, 'password');
         $admin->setEmail('admin@admin.com')
             ->setNom('nom admin')
-            ->setPrénom('prenom admin')
+            ->setPrenom('prenom admin')
             ->setRoles(['Admin_Role'])
             ->setPassword($hashedPassword);
 
         $veterinaire = new User();
         $hashedPassword = $this->passwordHasher->hashPassword($veterinaire, 'password');
         $veterinaire->setEmail('veterinaire@vet.com')
-            ->setPrénom('prenom vet')
+            ->setPrenom('prenom vet')
             ->setNom('nom vet')
             ->setRoles(['Veterinaire_Role'])
             ->setPassword($hashedPassword);
@@ -37,7 +37,7 @@ class AppFixtures extends Fixture
         $employe = new User();
         $hashedPassword = $this->passwordHasher->hashPassword($employe, 'password');
         $employe->setEmail('employe@emp.com')
-            ->setPrénom('prenom employe')
+            ->setPrenom('prenom employe')
             ->setNom('nom employe')
             ->setPassword($hashedPassword);
 

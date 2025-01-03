@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -19,10 +20,12 @@ class AnimalController extends AbstractController
 {
     private $em;
     private $serializer;
-    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer)
+    private $validator;
+    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $this->em = $em;
         $this->serializer = $serializer;
+        $this->validator = $validator;
     }
 
 
@@ -66,6 +69,12 @@ class AnimalController extends AbstractController
 
         $animal->setHabitat($this->em->getRepository(Habitat::class)->find($idHabitat));
 
+        //valider les entrées avant de persister
+        $errors = $this->validator->validate($animal);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
+
 
         $this->em->persist($animal);
         $this->em->flush();
@@ -87,6 +96,11 @@ class AnimalController extends AbstractController
             'json',
             [AbstractNormalizer::OBJECT_TO_POPULATE => $animal]
         );
+        $errors = $this->validator->validate($animal);
+        if ($errors->count() > 0) {
+            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        }
+
         $this->em->flush();
 
         return $this->json(['message' => 'animal edited'], JsonResponse::HTTP_ACCEPTED);
