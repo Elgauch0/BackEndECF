@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 #[Route('/api/animal')]
 class AnimalController extends AbstractController
@@ -21,11 +23,13 @@ class AnimalController extends AbstractController
     private $em;
     private $serializer;
     private $validator;
-    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator)
+    private $cachePool;
+    public function __construct(EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator, TagAwareCacheInterface $cachePool)
     {
         $this->em = $em;
         $this->serializer = $serializer;
         $this->validator = $validator;
+        $this->cachePool = $cachePool;
     }
 
 
@@ -39,11 +43,20 @@ class AnimalController extends AbstractController
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 10);
-        $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit);
-        if (!$animals) {
+        $idCache = 'getAnimals' . $page . '-' . $limit;
+        $animalsJson = $this->cachePool->get($idCache, function (ItemInterface $item) use ($page, $limit) {
+            echo "Not cached ";
+            $item->tag('animalCache');
+            $item->expiresAfter(86400);
+            //pour une meilleur performance vaut mieux json notre cache avant de le cacher;
+            $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit);
+            return  $this->serializer->serialize($animals, 'json', ['groups' => ['animals:read']]);
+        });
+        // $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit); ici sans l utilisation de system de cache 
+        if (!$animalsJson) {
             throw $this->createNotFoundException('No animal found or server down');
         }
-        return $this->json($animals, JsonResponse::HTTP_OK, [], ['groups' => ['animals:read']]);
+        return new JsonResponse($animalsJson, JsonResponse::HTTP_OK, [], true);
     }
 
 
@@ -60,6 +73,7 @@ class AnimalController extends AbstractController
     #[Route('/add', name: 'add_Animal', methods: 'POST')]
     public function addAnimal(Request $request): JsonResponse
     {
+        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
         $animalDTO = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
 
         $animal = new Animal();
@@ -92,6 +106,7 @@ class AnimalController extends AbstractController
     #[Route('/{id}', name: 'edit_Animal', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editAniaml(Animal $animal, Request $request): JsonResponse
     {
+        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
         $updatedAnimal = $this->serializer->deserialize(
             $request->getContent(),
             Animal::class,
@@ -121,6 +136,7 @@ class AnimalController extends AbstractController
     #[Route('/{id}', name: 'delete_Animal', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function deleteAnimal(Animal $animal): JsonResponse
     {
+        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
         $this->em->remove($animal);
         $this->em->flush();
         return $this->json(['message' => 'animal removed'], JsonResponse::HTTP_NO_CONTENT);
