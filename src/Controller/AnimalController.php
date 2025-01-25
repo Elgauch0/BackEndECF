@@ -122,15 +122,7 @@ class AnimalController extends AbstractController
 
         return $this->json(['message' => 'animal edited'], JsonResponse::HTTP_ACCEPTED);
     }
-    /**
-     * { method PUT
-     * "nom":"VEGETA",
-     * "description":"VEGETA M9AAAWD TAHOWUA",
-     * "habitatId": "1"
-     *}
-     * pagination:
-     * /api/animal/?page=2&limit=2
-     */
+
 
 
     #[Route('/{id}', name: 'delete_Animal', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
@@ -142,3 +134,12 @@ class AnimalController extends AbstractController
         return $this->json(['message' => 'animal removed'], JsonResponse::HTTP_NO_CONTENT);
     }
 }
+/**
+ * { method PUT
+ * "nom":"VEGETA",
+ * "description":"VEGETA M9AAAWD TAHOWUA",
+ * "habitatId": "1"
+ *}
+ * pagination:
+ * /api/animal/?page=2&limit=2
+ */
