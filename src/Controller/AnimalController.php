@@ -35,9 +35,11 @@ class AnimalController extends AbstractController
 
 
     #[Route('/', name: 'get_animals', methods: 'GET')]
-    public function getAnimals(): JsonResponse
+    public function getAnimals(Request $request): JsonResponse
     {
-        $animals = $this->em->getRepository(Animal::class)->findAll();
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 10);
+        $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit);
         if (!$animals) {
             throw $this->createNotFoundException('No animal found or server down');
         }
@@ -111,6 +113,8 @@ class AnimalController extends AbstractController
      * "description":"VEGETA M9AAAWD TAHOWUA",
      * "habitatId": "1"
      *}
+     * pagination:
+     * /api/animal/?page=2&limit=2
      */
 
 

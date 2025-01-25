@@ -16,6 +16,19 @@ class AnimalRepository extends ServiceEntityRepository
         parent::__construct($registry, Animal::class);
     }
 
+
+
+    public function findAllWithPagination(int $page, int $limit): array
+    {
+        $offset = ($page - 1) * $limit;
+
+        return $this->createQueryBuilder('a')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Animal[] Returns an array of Animal objects
     //     */
