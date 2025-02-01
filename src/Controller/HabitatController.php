@@ -83,6 +83,15 @@ class HabitatController extends AbstractController
         $this->em->flush();
         return $this->json(['message' => 'habitat removed'], JsonResponse::HTTP_NO_CONTENT);
     }
+    #[Route('/test')]
+    public function test(): JsonResponse
+    {
+        // Retourne une réponse JSON avec un message de succès
+        return new JsonResponse([
+            'message' => 'Backend Symfony works very well!',
+            'status' => 'success',
+        ]);
+    }
 
 
 

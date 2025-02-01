@@ -39,6 +39,7 @@ class Animal
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'animaux')]
+    #[Groups(["animals:read"])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Habitat $habitat = null;
 
