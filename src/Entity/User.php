@@ -23,6 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     #[Groups(["users:read"])]
     #[Assert\Email(message: "L'adresse e-mail n'est pas valide.")]
+    #[Assert\NotBlank]
     private ?string $email = null;
 
     /** 
@@ -30,6 +31,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     #[Groups(["users:read"])]
+    #[Assert\NotBlank]
     private array $roles = [];
 
     /** 
@@ -43,6 +45,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: "Le mot de passe doit contenir au moins 8 caractères.",
         maxMessage: "Le mot de passe ne peut pas dépasser 64 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[ORM\Column(length: 50)]
@@ -53,6 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 50)]
@@ -63,6 +67,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $nom = null;
 
     public function getId(): ?int

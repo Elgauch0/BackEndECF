@@ -24,6 +24,7 @@ class RapportVeterinaire
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $etat = null;
 
     #[ORM\Column(length: 100)]
@@ -34,6 +35,7 @@ class RapportVeterinaire
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 100 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $nourriture = null;
 
     #[ORM\Column]
@@ -47,6 +49,7 @@ class RapportVeterinaire
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 255 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $autreDetail = null;
 
     #[ORM\ManyToOne(inversedBy: 'rapport_vet')]

@@ -26,6 +26,7 @@ class Habitat
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
@@ -36,6 +37,7 @@ class Habitat
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 255 caractères."
     )]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     /**
