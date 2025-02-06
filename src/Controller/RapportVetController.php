@@ -54,7 +54,7 @@ class RapportVetController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $idanimal = $data['animalId'];
         if (!$idanimal) {
-            return $this->json('animalId is Required', JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'animalId is Required'], JsonResponse::HTTP_BAD_REQUEST);
         }
         $rapport->setPassageDate(new DateTimeImmutable());
         $rapport->setAnimal($this->em->getRepository(Animal::class)->find($idanimal));

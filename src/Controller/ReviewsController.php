@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 #[Route('/api/reviews')]
@@ -61,7 +62,7 @@ class ReviewsController extends AbstractController
     {
 
         if (!$avis) {
-            return $this->json(['message' => 'Avis not found'], JsonResponse::HTTP_NOT_FOUND);
+            throw new NotFoundHttpException('Avis non trouvé');
         }
 
         $action = $request->query->get('action');
