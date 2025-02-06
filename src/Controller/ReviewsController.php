@@ -57,9 +57,9 @@ class ReviewsController extends AbstractController
 
 
     #[Route('/{id}', name: 'manage_review', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function manageReview(Request $request, $id): JsonResponse
+    public function manageReview(Avis $avis, Request $request): JsonResponse
     {
-        $avis = $this->em->getRepository(Avis::class)->find($id);
+
         if (!$avis) {
             return $this->json(['message' => 'Avis not found'], JsonResponse::HTTP_NOT_FOUND);
         }
