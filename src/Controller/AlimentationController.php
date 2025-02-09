@@ -26,6 +26,14 @@ class AlimentationController extends AbstractController
         $this->validator = $validator;
     }
 
+    #[Route('/', name: 'get_alimentations', methods: 'get')]
+    public function getAlimentation(Request $request): JsonResponse
+    {
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 10);
+
+        return $this->json($this->em->getRepository(Alimentation::class)->findAllWithPagination($page, $limit), JsonResponse::HTTP_ACCEPTED, [], ['groups' => 'alimentation:read']);
+    }
 
 
 

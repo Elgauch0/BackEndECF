@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\AlimentationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: AlimentationRepository::class)]
 class Alimentation
@@ -12,10 +13,12 @@ class Alimentation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["alimentation:read"])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'alimentations')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["alimentation:read"])]
     private ?Animal $animal_id = null;
 
     #[ORM\Column(length: 255)]
@@ -26,6 +29,7 @@ class Alimentation
         maxMessage: "Le champ ne peut pas dépasser 255 caractères."
     )]
     #[Assert\NotBlank]
+    #[Groups(["alimentation:read"])]
     private ?string $nourritureDonnée = null;
 
     #[ORM\Column(length: 60)]
@@ -36,9 +40,11 @@ class Alimentation
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
     #[Assert\NotBlank]
+    #[Groups(["alimentation:read"])]
     private ?string $quantité = null;
 
     #[ORM\Column]
+    #[Groups(["alimentation:read"])]
     private ?\DateTimeImmutable $givenAt = null;
 
     public function getId(): ?int

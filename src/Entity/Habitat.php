@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\HabitatRepository;
 use Doctrine\Common\Collections\Collection;
@@ -47,6 +48,10 @@ class Habitat
     #[Groups(["habitat:read"])]
 
     private Collection $animaux;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(["habitat:read"])]
+    private ?string $commentaire = null;
 
     public function __construct()
     {
@@ -108,6 +113,18 @@ class Habitat
                 $animaux->setHabitat(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCommentaire(): ?string
+    {
+        return $this->commentaire;
+    }
+
+    public function setCommentaire(?string $commentaire): static
+    {
+        $this->commentaire = $commentaire;
 
         return $this;
     }

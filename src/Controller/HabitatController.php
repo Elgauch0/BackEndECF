@@ -60,18 +60,54 @@ class HabitatController extends AbstractController
     }
 
 
+    // #[Route('/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
+    // public function editHabitat(Habitat $habitat, Request $request): JsonResponse
+    // {
+
+    //     $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
+    //     $errors = $this->validator->validate($habitatDTO);
+    //     if ($errors->count() > 0) {
+    //         return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+    //     }
+    //     $this->em->flush();
+
+    //     return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);
+    // }
     #[Route('/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editHabitat(Habitat $habitat, Request $request): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
 
-        $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
-        $errors = $this->validator->validate($habitatDTO);
-        if ($errors->count() > 0) {
-            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+
+        if (array_key_exists('action', $data)) {
+            $action = $data['action'];
+            if ($action === 'editCommentaire') {
+                if (array_key_exists('commentaire', $data)) {
+                    $commentaire = $data['commentaire'];
+                    if ($commentaire === null) {
+                        $habitat->setCommentaire(null);
+                    } else {
+                        $habitat->setCommentaire($commentaire);
+                    }
+                    $this->em->flush();
+                    return $this->json(['message' => 'commentaire modifié', 'commentaire' => $commentaire], JsonResponse::HTTP_ACCEPTED);
+                } else {
+                    return new JsonResponse(['message' => 'le champ commentaire est manquant'], JsonResponse::HTTP_BAD_REQUEST);
+                }
+            }
+            return new JsonResponse(['message' => 'action non reconnue'], JsonResponse::HTTP_BAD_REQUEST);
+        } else {
+            $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
+
+            $errors = $this->validator->validate($habitatDTO);
+            if ($errors->count() > 0) {
+                return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+            }
+
+            $this->em->flush();
+
+            return $this->json(['message' => 'habitat modifié'], JsonResponse::HTTP_ACCEPTED);
         }
-        $this->em->flush();
-
-        return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);
     }
 
 
