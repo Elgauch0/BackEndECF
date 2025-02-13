@@ -29,7 +29,6 @@ class AnimalController extends AbstractController
         $this->em = $em;
         $this->serializer = $serializer;
         $this->validator = $validator;
-        $this->cachePool = $cachePool;
     }
 
 
@@ -39,24 +38,11 @@ class AnimalController extends AbstractController
 
 
     #[Route('/', name: 'get_animals', methods: 'GET')]
-    public function getAnimals(Request $request): JsonResponse
+    public function getAnimals(): JsonResponse
     {
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
-        $idCache = 'getAnimals' . $page . '-' . $limit;
-        $animalsJson = $this->cachePool->get($idCache, function (ItemInterface $item) use ($page, $limit) {
-            echo "Not cached ";
-            $item->tag('animalCache');
-            $item->expiresAfter(86400);
-            //pour une meilleur performance vaut mieux json notre cache avant de le cacher;
-            $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit);
-            return  $this->serializer->serialize($animals, 'json', ['groups' => ['animals:read']]);
-        });
-        // $animals = $this->em->getRepository(Animal::class)->findAllWithPagination($page, $limit); ici sans l utilisation de system de cache 
-        if (!$animalsJson) {
-            throw $this->createNotFoundException('No animal found or server down');
-        }
-        return new JsonResponse($animalsJson, JsonResponse::HTTP_OK, [], true);
+
+        $animals = $this->em->getRepository(Animal::class)->findAll();
+        return $this->json($animals, JsonResponse::HTTP_OK, [], ['groups' => ['animals:read']]);
     }
 
 
@@ -73,7 +59,6 @@ class AnimalController extends AbstractController
     #[Route('/add', name: 'add_Animal', methods: 'POST')]
     public function addAnimal(Request $request): JsonResponse
     {
-        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
         $animalDTO = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
 
         $animal = new Animal();
@@ -106,7 +91,7 @@ class AnimalController extends AbstractController
     #[Route('/{id}', name: 'edit_Animal', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editAniaml(Animal $animal, Request $request): JsonResponse
     {
-        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
+
         $updatedAnimal = $this->serializer->deserialize(
             $request->getContent(),
             Animal::class,
@@ -128,13 +113,12 @@ class AnimalController extends AbstractController
     #[Route('/{id}', name: 'delete_Animal', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function deleteAnimal(Animal $animal): JsonResponse
     {
-        $this->cachePool->invalidateTags(['animalCache']); //invalider et supprimer le cache animal;
         $this->em->remove($animal);
         $this->em->flush();
         return $this->json(['message' => 'animal removed'], JsonResponse::HTTP_NO_CONTENT);
     }
 }
-/**
+/** 
  * { method PUT
  * "nom":"VEGETA",
  * "description":"VEGETA M9AAAWD TAHOWUA",

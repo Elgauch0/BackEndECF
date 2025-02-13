@@ -26,7 +26,7 @@ class Service
 
     #[ORM\Column(length: 255)]
     #[Assert\Length(
-        min: 20,
+        min: 5,
         max: 255,
         minMessage: "Le champ doit contenir au moins 5 caractères.",
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."

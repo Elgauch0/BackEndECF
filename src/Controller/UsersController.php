@@ -40,6 +40,10 @@ class UsersController extends AbstractController
         return $this->json($this->em->getRepository(User::class)->findAll(), JsonResponse::HTTP_OK, [], ['groups' => ['users:read']]);
     }
 
+
+
+
+
     #[Route('/{id}', name: 'delete_User', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function deleteUser(User $user): JsonResponse
     {
@@ -55,35 +59,42 @@ class UsersController extends AbstractController
     #[Route('/add', name: 'add_user', methods: 'POST')]
     public function addUser(Request $request, MailerInterface $mailer): JsonResponse
     {
-        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        // Démarrer une transaction
+        $this->em->beginTransaction();
 
-        $Data = json_decode($request->getContent(), true);
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $Data['password']);
+        try {
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+            $Data = json_decode($request->getContent(), true);
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $Data['password']);
 
+            $user->setRoles($Data['Vet'] ? ['ROLE_VETERINAIRE'] : ['ROLE_EMPLOYE']);
+            $user->setPassword($hashedPassword);
 
+            $errors = $this->validator->validate($user);
+            if ($errors->count() > 0) {
+                return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST);
+            }
 
-        $user->setRoles($Data['Vet'] ? ['ROLE_VETERINAIRE'] : ['ROLE_EMPLOYE']);
-        $user->setPassword($hashedPassword);
-        $errors = $this->validator->validate($user);
-        if ($errors->count() > 0) {
-            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+            // Envoyer l'email avant de persister
+            $email = (new Email())
+                ->from('demo@mailtrap.com')
+                ->to($user->getEmail())
+                ->subject('Bienvenue a Arcadia Zoo')
+                ->html('<h1>Bienvenue </h1> <p> bienvenue a vous!, vous pouvez vous connecter aux site en utilisant votre email,
+                et pour le mot de passe venez le chercher a la direction .</p>');
+
+            $mailer->send($email);
+
+            // Si l'email est envoyé avec succès, on persiste
+            $this->em->persist($user);
+            $this->em->flush();
+            $this->em->commit();
+
+            return new JsonResponse(['message' => 'User Added'], JsonResponse::HTTP_CREATED);
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            return new JsonResponse(['message' => 'Error creating user'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-
-        $email = (new Email())
-            ->from('demo@mailtrap.com')
-            ->to($user->getEmail())
-
-            ->subject('Welcome to arcadia Zoo')
-            ->html('<h1>You have been added to the database</h1> <p>Hey, welcome to our company! 
-              You have been added to the site with the email you provided. Please take note of your password.</p>');
-
-        $mailer->send($email);
-
-
-        $this->em->persist($user);
-        $this->em->flush();
-        return $this->json(['message' => 'User Added'], JsonResponse::HTTP_CREATED);
     }
 }
 
