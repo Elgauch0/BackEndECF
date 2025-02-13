@@ -19,7 +19,7 @@ class Animal
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
-    #[Groups(["animals:read", "alimentation:read"])]
+    #[Groups(["animals:read", "alimentation:read", "rapport:read"])]
     #[Assert\Length(
         min: 5,
         max: 60,
