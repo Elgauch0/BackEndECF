@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-#[Route('/api/alimentation')]
+#[Route('/api/administration/alimentation')]
 class AlimentationController extends AbstractController
 {
     private $em;

@@ -9,11 +9,12 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/api/habitat')]
+#[Route('/api')]
 class HabitatController extends AbstractController
 {
     private $em;
@@ -29,20 +30,20 @@ class HabitatController extends AbstractController
 
 
 
-    #[Route('/', name: 'get_Habitats', methods: 'GET')]
+    #[Route('/habitat', name: 'get_Habitats', methods: 'GET')]
     public function getHabitat(): JsonResponse
     {
         return $this->json($this->em->getRepository(Habitat::class)->findAll(), JsonResponse::HTTP_OK, [], ['groups' => ['habitat:read']]);
     }
 
 
-    #[Route('/{id}', name: 'get_Habitat', methods: 'GET', requirements: ['id' => Requirement::POSITIVE_INT])]
+    #[Route('/habitat/{id}', name: 'get_Habitat', methods: 'GET', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function getAnimal(Habitat $habitat): JsonResponse
     {
         return $this->json($habitat, JsonResponse::HTTP_OK, [], ['groups' => ['habitat:read']]);
     }
 
-
+    #[IsGranted('ROLE_EMPLOYE', message: 'No access!')]
     #[Route('/add', name: 'add_Habitat', methods: 'POST')]
     public function addHabitat(Request $request): JsonResponse
     {
@@ -73,7 +74,8 @@ class HabitatController extends AbstractController
 
     //     return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);
     // }
-    #[Route('/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
+
+    #[Route('/administration/habitat/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editHabitat(Habitat $habitat, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -112,7 +114,7 @@ class HabitatController extends AbstractController
 
 
 
-    #[Route('/{id}', name: 'delete_Habitat', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
+    #[Route('/administration/habitat{id}', name: 'delete_Habitat', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function deleteHabitat(Habitat $habitat): JsonResponse
     {
         $this->em->remove($habitat);

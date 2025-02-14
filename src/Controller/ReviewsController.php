@@ -4,16 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Avis;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Requirement\Requirement;
 
-#[Route('/api/reviews')]
+#[Route('/api')]
 class ReviewsController extends AbstractController
 {
 
@@ -28,13 +29,14 @@ class ReviewsController extends AbstractController
     }
 
 
-    #[Route('/valid', name: 'get_Reviews', methods: 'GET')]
+    #[Route('/reviews/valid', name: 'get_Reviews', methods: 'GET')]
     public function getReviewsV(): JsonResponse
     {
         return $this->json($this->em->getRepository(Avis::class)->findBy(['isValid' => true]), JsonResponse::HTTP_OK, [], ['groups' => ['avis:read']]);
     }
 
-    #[Route('/nvalid', name: 'get_RValidation', methods: 'GET')]
+
+    #[Route('/administration/reviews/nvalid', name: 'get_RValidation', methods: 'GET')]
     public function getReviewsN(): JsonResponse
     {
         return $this->json($this->em->getRepository(Avis::class)->findBy(['isValid' => false]), JsonResponse::HTTP_OK, [], ['groups' => ['avis:read']]);
@@ -42,7 +44,7 @@ class ReviewsController extends AbstractController
 
 
 
-    #[Route('/add', name: 'add_Review', methods: 'Post')]
+    #[Route('/administration/reviews/add', name: 'add_Review', methods: 'Post')]
     public function addReview(Request $request): JsonResponse
     {
         $reviewDTO = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');
@@ -57,7 +59,7 @@ class ReviewsController extends AbstractController
     }
 
 
-    #[Route('/{id}', name: 'manage_review', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
+    #[Route('/administration/reviews/{id}', name: 'manage_review', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
     public function manageReview(Avis $avis, Request $request): JsonResponse
     {
 

@@ -25,15 +25,18 @@ security:
     administration:
       pattern: ^/api/administration
       stateless: true
-      security: false
       jwt:
         provider: app_user_provider
         authenticator: lexik_jwt_authentication.security.jwt_authenticator
 
-  # access_control:
-  #   - { path: ^/api/administration/admin, roles: ROLE_ADMIN }
-  #   - { path: ^/api/administration/vet, roles: ROLE_VETERINAIRE }
-  #   - { path: ^/api/administration, roles: ROLE_EMPLOYE }
+  access_control:
+    # - { path: ^/api/administration/admin, roles: ROLE_ADMIN }
+    # - { path: ^/api/administration/vet, roles: ROLE_VETERINAIRE }
+    - { path: ^/api/administration, roles: ROLE_EMPLOYE }
+
+  role_hierarchy:
+    ROLE_VETERINAIRE: ROLE_EMPLOYE
+    ROLE_ADMIN: ["ROLE_VETERINAIRE", "ROLE_EMPLOYE"]
 
 when@test:
   security:
