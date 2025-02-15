@@ -9,8 +9,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: HabitatRepository::class)]
+#[Vich\Uploadable]
 class Habitat
 {
     #[ORM\Id]
@@ -46,12 +49,24 @@ class Habitat
      */
     #[ORM\OneToMany(targetEntity: animal::class, mappedBy: 'habitat', orphanRemoval: true)]
     #[Groups(["habitat:read"])]
-
     private Collection $animaux;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(["habitat:read"])]
     private ?string $commentaire = null;
+
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Vich\UploadableField(mapping: 'habitat_image', fileNameProperty: 'imageName')]
+    private ?File $imageFile = null;
+    #[Groups(["habitat:read"])]
+    #[ORM\Column(nullable: true)]
+    private ?string $imageName = null;
+
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
 
     public function __construct()
     {
@@ -127,5 +142,33 @@ class Habitat
         $this->commentaire = $commentaire;
 
         return $this;
+    }
+    /**
+     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile
+     */
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
     }
 }

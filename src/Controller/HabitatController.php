@@ -13,6 +13,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 
 #[Route('/api')]
 class HabitatController extends AbstractController
@@ -43,22 +45,51 @@ class HabitatController extends AbstractController
         return $this->json($habitat, JsonResponse::HTTP_OK, [], ['groups' => ['habitat:read']]);
     }
 
-    #[IsGranted('ROLE_EMPLOYE', message: 'No access!')]
-    #[Route('/add', name: 'add_Habitat', methods: 'POST')]
+
+
+
+    #[Route('/administration/habitat/add', name: 'add_Habitat', methods: 'POST')]
     public function addHabitat(Request $request): JsonResponse
+
     {
+        $habitat = new Habitat();
 
-        $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json');
 
-        $errors = $this->validator->validate($habitatDTO);
-        if ($errors->count() > 0) {
-            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+        $nom = $request->request->get('nom');
+        $description = $request->request->get('description');
+        if (!$nom || !$description) {
+            return new JsonResponse(['message' => 'Données manquantes'], JsonResponse::HTTP_BAD_REQUEST);
         }
-        $this->em->persist($habitatDTO);
+
+        $habitat->setNom($nom);
+        $habitat->setDescription($description);
+
+        // Gérer le fichier image
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('imageFile');
+        if ($imageFile) {
+            $habitat->setImageFile($imageFile);
+        } else {
+            return new JsonResponse(['message' => 'Image requise'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Validation
+        $errors = $this->validator->validate($habitat);
+        if ($errors->count() > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return new JsonResponse(['message' => 'Validation échouée', 'errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Enregistrement
+        $this->em->persist($habitat);
         $this->em->flush();
 
-        return $this->json(['message' => 'habitat created'], JsonResponse::HTTP_CREATED);
+        return $this->json(['message' => 'Habitat créé'], JsonResponse::HTTP_CREATED);
     }
+
 
 
     // #[Route('/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
@@ -75,46 +106,50 @@ class HabitatController extends AbstractController
     //     return $this->json(['message' => 'habitat edited'], JsonResponse::HTTP_ACCEPTED);
     // }
 
-    #[Route('/administration/habitat/{id}', name: 'edit_Habitat', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
+
+
+    #[Route('/administration/habitat/{id}', name: 'edit_Habitat', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editHabitat(Habitat $habitat, Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+
+        $nom = $request->request->get('nom');
+        $description = $request->request->get('description');
 
 
-        if (array_key_exists('action', $data)) {
-            $action = $data['action'];
-            if ($action === 'editCommentaire') {
-                if (array_key_exists('commentaire', $data)) {
-                    $commentaire = $data['commentaire'];
-                    if ($commentaire === null) {
-                        $habitat->setCommentaire(null);
-                    } else {
-                        $habitat->setCommentaire($commentaire);
-                    }
-                    $this->em->flush();
-                    return $this->json(['message' => 'commentaire modifié', 'commentaire' => $commentaire], JsonResponse::HTTP_ACCEPTED);
-                } else {
-                    return new JsonResponse(['message' => 'le champ commentaire est manquant'], JsonResponse::HTTP_BAD_REQUEST);
-                }
-            }
-            return new JsonResponse(['message' => 'action non reconnue'], JsonResponse::HTTP_BAD_REQUEST);
-        } else {
-            $habitatDTO = $this->serializer->deserialize($request->getContent(), Habitat::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $habitat]);
-
-            $errors = $this->validator->validate($habitatDTO);
-            if ($errors->count() > 0) {
-                return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
-            }
-
-            $this->em->flush();
-
-            return $this->json(['message' => 'habitat modifié'], JsonResponse::HTTP_ACCEPTED);
+        if (!$nom || !$description) {
+            return new JsonResponse(['message' => 'Données manquantes'], JsonResponse::HTTP_BAD_REQUEST);
         }
+
+        $habitat->setNom($nom);
+        $habitat->setDescription($description);
+
+        // Gérer le fichier image (facultatif)
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('imageFile');
+        if ($imageFile) {
+            $habitat->setImageFile($imageFile);
+        }
+
+        // Validation
+        $errors = $this->validator->validate($habitat);
+        if ($errors->count() > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return new JsonResponse(['message' => 'Validation échouée', 'errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Enregistrement des modifications
+        $this->em->flush();
+
+        return $this->json(['message' => 'Habitat modifié'], JsonResponse::HTTP_OK);
     }
 
 
 
-    #[Route('/administration/habitat{id}', name: 'delete_Habitat', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
+
+    #[Route('/administration/habitat/{id}', name: 'delete_Habitat', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function deleteHabitat(Habitat $habitat): JsonResponse
     {
         $this->em->remove($habitat);

@@ -8,8 +8,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
+#[Vich\Uploadable]
 class Animal
 {
     #[ORM\Id]
@@ -19,7 +22,7 @@ class Animal
     private ?int $id = null;
 
     #[ORM\Column(length: 60)]
-    #[Groups(["animals:read", "alimentation:read", "rapport:read"])]
+    #[Groups(["animals:read", "alimentation:read", "rapport:read", "habitat:read"])]
     #[Assert\Length(
         min: 5,
         max: 60,
@@ -56,6 +59,20 @@ class Animal
      */
     #[ORM\OneToMany(targetEntity: Alimentation::class, mappedBy: 'animal_id', cascade: ['remove'])]
     private Collection $alimentations;
+
+
+
+    // NOTE: This is not a mapped field of entity metadata, just a simple property.
+    #[Vich\UploadableField(mapping: 'animal_image', fileNameProperty: 'imageName')]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(["animals:read"])]
+    private ?string $imageName = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
 
     public function __construct()
     {
@@ -162,5 +179,32 @@ class Animal
         }
 
         return $this;
+    }
+
+    /**
+     * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile
+     */
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
     }
 }

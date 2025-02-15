@@ -44,7 +44,7 @@ class ReviewsController extends AbstractController
 
 
 
-    #[Route('/administration/reviews/add', name: 'add_Review', methods: 'Post')]
+    #[Route('/reviews/add', name: 'add_Review', methods: 'Post')]
     public function addReview(Request $request): JsonResponse
     {
         $reviewDTO = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');

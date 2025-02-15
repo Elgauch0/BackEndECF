@@ -10,10 +10,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Requirement\Requirement;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/api')]
 class AnimalController extends AbstractController
@@ -51,54 +51,82 @@ class AnimalController extends AbstractController
 
 
 
+
+
     #[Route('/administration/animal/add', name: 'add_Animal', methods: 'POST')]
     public function addAnimal(Request $request): JsonResponse
     {
-        $animalDTO = $this->serializer->deserialize($request->getContent(), Animal::class, 'json');
-
         $animal = new Animal();
-        $animal->setNom($animalDTO->getNom());
-        $animal->setDescription($animalDTO->getDescription());
+        $nom = $request->request->get('nom');
+        $description = $request->request->get('description');
+        $idHabitat = $request->request->get('habitatId');
 
-        $data = json_decode($request->getContent(), true);
-        $idHabitat = $data['habitatId'];
+        $animal->setNom($nom);
+        $animal->setDescription($description);
 
-        $animal->setHabitat($this->em->getRepository(Habitat::class)->find($idHabitat));
+
+        $habitat = $this->em->getRepository(Habitat::class)->find($idHabitat);
+        if (!$habitat) {
+            return new JsonResponse(['message' => 'Habitat non trouvé'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+        $animal->setHabitat($habitat);
+
+        // Gérer le fichier image
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('imageFile');
+        if ($imageFile) {
+            $animal->setImageFile($imageFile);
+        } else {
+            return new JsonResponse(['message' => 'Image requise'], JsonResponse::HTTP_BAD_REQUEST);
+        }
         $errors = $this->validator->validate($animal);
         if ($errors->count() > 0) {
-            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+            return new JsonResponse(['message' => 'Validation échouée', 'errors' => (string)$errors], JsonResponse::HTTP_BAD_REQUEST);
         }
-
-
         $this->em->persist($animal);
         $this->em->flush();
 
-
-        return $this->json(['message' => 'Animal Updated'], JsonResponse::HTTP_CREATED);
+        return $this->json(['message' => 'Animal créé'], JsonResponse::HTTP_CREATED);
     }
 
 
 
 
 
-    #[Route('/administration/animal/{id}', name: 'edit_Animal', methods: 'PUT', requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function editAniaml(Animal $animal, Request $request): JsonResponse
+
+    #[Route('/administration/animal/{id}', name: 'edit_Animal', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
+    public function editAnimal(Animal $animal, Request $request): JsonResponse
     {
 
-        $updatedAnimal = $this->serializer->deserialize(
-            $request->getContent(),
-            Animal::class,
-            'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $animal]
-        );
+        $nom = $request->request->get('nom');
+        $description = $request->request->get('description');
+        $idHabitat = $request->request->get('habitatId');
+        $animal->setNom($nom);
+        $animal->setDescription($description);
+
+
+        $habitat = $this->em->getRepository(Habitat::class)->find($idHabitat);
+        if (!$habitat) {
+            return new JsonResponse(['message' => 'Habitat non trouvé'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+        $animal->setHabitat($habitat);
+
+        // Gestion de l'image (mise à jour facultative)
+        /** @var UploadedFile $imageFile */
+        $imageFile = $request->files->get('imageFile');
+        if ($imageFile) {
+            $animal->setImageFile($imageFile);
+        }
+
+
         $errors = $this->validator->validate($animal);
         if ($errors->count() > 0) {
-            return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
+            return new JsonResponse(['message' => 'Validation échouée', 'errors' => (string)$errors], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $this->em->flush();
 
-        return $this->json(['message' => 'animal edited'], JsonResponse::HTTP_ACCEPTED);
+        return $this->json(['message' => 'Animal modifié'], JsonResponse::HTTP_OK);
     }
 
 
