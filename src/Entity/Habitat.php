@@ -45,9 +45,9 @@ class Habitat
     private ?string $description = null;
 
     /**
-     * @var Collection<int, animal>
+     * @var Collection<int, Animal>
      */
-    #[ORM\OneToMany(targetEntity: animal::class, mappedBy: 'habitat', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Animal::class, mappedBy: 'habitat', orphanRemoval: true)]
     #[Groups(["habitat:read"])]
     private Collection $animaux;
 
@@ -103,14 +103,14 @@ class Habitat
     }
 
     /**
-     * @return Collection<int, animal>
+     * @return Collection<int, Animal>
      */
     public function getAnimaux(): Collection
     {
         return $this->animaux;
     }
 
-    public function addAnimaux(animal $animaux): static
+    public function addAnimaux(Animal $animaux): static
     {
         if (!$this->animaux->contains($animaux)) {
             $this->animaux->add($animaux);
@@ -120,7 +120,7 @@ class Habitat
         return $this;
     }
 
-    public function removeAnimaux(animal $animaux): static
+    public function removeAnimaux(Animal $animaux): static
     {
         if ($this->animaux->removeElement($animaux)) {
             // set the owning side to null (unless already changed)

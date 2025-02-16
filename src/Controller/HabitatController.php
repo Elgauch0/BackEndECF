@@ -111,7 +111,6 @@ class HabitatController extends AbstractController
     #[Route('/administration/habitat/{id}', name: 'edit_Habitat', methods: ['POST'], requirements: ['id' => Requirement::POSITIVE_INT])]
     public function editHabitat(Habitat $habitat, Request $request): JsonResponse
     {
-
         $nom = $request->request->get('nom');
         $description = $request->request->get('description');
 
@@ -146,7 +145,20 @@ class HabitatController extends AbstractController
         return $this->json(['message' => 'Habitat modifié'], JsonResponse::HTTP_OK);
     }
 
+    #[Route('/administration/habitat/avis/{id}', name: 'editAvis_Habitat', methods: ['Put'], requirements: ['id' => Requirement::POSITIVE_INT])]
+    public function editAvis(Habitat $habitat, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (isset($data['action'])) {
+            if ($data['action'] === 'editCommentaire') {
+                $habitat->setCommentaire($data['commentaire']);
+                $this->em->flush();
+                return $this->json(['message' => 'commentaire modifié'], JsonResponse::HTTP_OK);
+            }
+        }
 
+        return new JsonResponse(['message' => 'Validation échouée', 'errors' => 'missing data'], JsonResponse::HTTP_BAD_REQUEST);
+    }
 
 
     #[Route('/administration/habitat/{id}', name: 'delete_Habitat', methods: 'DELETE', requirements: ['id' => Requirement::POSITIVE_INT])]
