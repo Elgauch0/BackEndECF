@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class VisitsController extends AbstractController
 {
 
-    #[Route('/api/visits')]
+    #[Route('/api/administration/visits', name: 'get_statistic', methods: ['GET'])]
     public function getAllAnimalCounts(DocumentManager $dm): JsonResponse
     {
         try {
