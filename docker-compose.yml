@@ -1,0 +1,56 @@
+
+
+services:
+  app:
+    build: .
+    container_name: symfony_app
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: prod
+     
+      DATABASE_URL: "mysql://root:root@mariadb:3306/BackendDb?serverVersion=10.4.32-MariaDB&charset=utf8mb4"
+     
+      MONGODB_URL: "mongodb://mongodb:27017"
+      MONGODB_DB: symfony
+      MAILER_DSN: "smtp://a73127d6fbae2f:580863dddb4430@sandbox.smtp.mailtrap.io:2525"
+    depends_on:
+      - mariadb
+      - mongodb
+
+  mariadb:
+    image: mariadb:10.4
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: BackendDb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck: 
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=root"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+
+
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:  
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  mariadb_data:
+  mongodb_data:
