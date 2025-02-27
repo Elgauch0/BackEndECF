@@ -1,0 +1,26 @@
+.git
+.gitignore
+.dockerignore
+docker-compose.*
+Dockerfile.dev
+
+.env.local
+.DS_Store
+.idea
+.vscode
+tmp
+*.md
+*.pdf
+/docs
+/coverage
+
+# Exclure les dossiers générés ou volumineux
+node_modules/
+.phpunit*
+phpunit.xml
+.cache
+vendor/
+var/*
+!var/log
+# IMPORTANT : ne pas ignorer le dossier bin/
+!bin/

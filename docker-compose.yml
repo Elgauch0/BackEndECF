@@ -1,0 +1,67 @@
+
+
+services:
+  symfony_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zoobackend
+    ports:
+      - "8000:80"  
+    environment:
+      - APP_ENV=prod
+      - DATABASE_URL=mysql://app:password@bddmaria:3306/zoo_arcadia?serverVersion=mariadb-10.10.2&charset=utf8mb4
+      - MONGODB_URL=mongodb://app:password@bddmongo:27017/zoo_arcadia?authSource=admin
+      - MAILER_DSN=smtp://user:pass@smtp.server:port
+      - APP_SECRET=4343eb96aeeffc4efa98ddc9b443f0f156a5a7ec802b8f45f87d132f914bdbe4
+      - JWT_SECRET_KEY=/var/www/symfony/config/jwt/private.pem
+      - JWT_PUBLIC_KEY=/var/www/symfony/config/jwt/public.pem
+      - JWT_PASSPHRASE=password
+    networks:
+      - zoo-network
+    command: >
+      sh -c "while ! nc -z bddmaria 3306; do echo 'Attente de MariaDB...'; sleep 2; done &&
+             while ! nc -z bddmongo 27017; do echo 'Attente de MongoDB...'; sleep 2; done &&
+             php bin/console doctrine:migrations:migrate --no-interaction &&
+             php bin/console cache:clear --env=prod &&
+             apache2-foreground"
+    depends_on:
+      - bddmaria
+      - bddmongo
+
+  bddmaria:
+    image: mariadb:10.10.2
+    container_name: bddmaria
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: zoo_arcadia
+      MARIADB_USER: app
+      MARIADB_PASSWORD: password
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      zoo-network:
+        aliases:
+          - bddmaria
+
+  bddmongo:
+    image: mongo:6.0
+    container_name: bddmongo
+    environment:
+      MONGO_INITDB_DATABASE: zoo_arcadia
+      MONGO_INITDB_ROOT_USERNAME: app
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      zoo-network:
+        aliases:
+          - bddmongo
+
+volumes:
+  mariadb-data:
+  mongodb-data:
+
+networks:
+  zoo-network:
+    driver: bridge

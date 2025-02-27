@@ -1,65 +1,54 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
-# Installer les dépendances
-RUN apt-get update && apt-get install -y \
+# Installation des dépendances essentielles
+RUN apt-get update && \
+    apt-get install -y \
     git \
     unzip \
     libzip-dev \
     libicu-dev \
     libpng-dev \
+    libssl-dev \               
+    libcurl4-openssl-dev \ 
     libjpeg-dev \
     libfreetype6-dev \
-    librabbitmq-dev \
-    libssh-dev \
-    libxslt1-dev \
-    default-mysql-client \
+    netcat-openbsd \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer MongoDB extension
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+# Configuration et installation des extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j$(nproc) gd pdo_mysql intl zip && \
+    pecl install mongodb && \
+    docker-php-ext-enable mongodb && \
+    a2enmod rewrite
 
-# Configurer et installer les extensions PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    zip \
-    intl \
-    gd \
-    pdo_mysql \
-    bcmath \
-    sockets \
-    xsl \
-    opcache
+# Installation de Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Optimiser PHP pour la production
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
-    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' "$PHP_INI_DIR/php.ini"
+# Configuration du VirtualHost Apache pour Symfony
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/symfony/public\n\
+    DirectoryIndex index.php\n\
+    <Directory /var/www/symfony/public>\n\
+    AllowOverride All\n\
+    Order Allow,Deny\n\
+    Allow from All\n\
+    FallbackResource /index.php\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+    </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Configurer OPcache
-RUN { \
-    echo 'opcache.memory_consumption=128'; \
-    echo 'opcache.interned_strings_buffer=8'; \
-    echo 'opcache.max_accelerated_files=4000'; \
-    echo 'opcache.revalidate_freq=2'; \
-    echo 'opcache.fast_shutdown=1'; \
-    } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+# Définition du ServerName pour éviter les avertissements
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Installer Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Définir le répertoire de travail
+# Configuration du dossier de travail
 WORKDIR /var/www/symfony
+COPY . .
 
-# Copier les fichiers de l'application
-COPY . /var/www/symfony
+# Installation des dépendances et configuration des permissions
+RUN composer install --optimize-autoloader --no-dev --no-scripts && \
+    chown -R www-data:www-data var public
 
-# Installer les dépendances
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --prefer-dist --no-dev --no-progress --no-interaction
-
-# Changer les permissions
-RUN chown -R www-data:www-data /var/www/symfony/var
-
-# Exposer le port PHP-FPM
-EXPOSE 9000
-
-# Configurer l'entrypoint
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]

@@ -1,0 +1,24 @@
+# Fichier à placer dans le dossier public/ de votre projet Symfony
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Determiner le RewriteBase automatiquement et le définir
+    RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
+    RewriteRule .* - [E=BASE:%1]
+
+    # Si le fichier demandé existe, simplement le servir
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .? - [L]
+
+    # Rediriger tout le reste vers index.php
+    RewriteRule .? %{ENV:BASE}/index.php [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        # Quand mod_rewrite n'est pas disponible, nous indiquons à Apache
+        # d'utiliser le front controller de façon à ce que les URLs fonctionnent
+        RedirectMatch 307 ^/$ /index.php/
+    </IfModule>
+</IfModule>
