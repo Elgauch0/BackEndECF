@@ -24,7 +24,7 @@ class Avis
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
     #[Assert\NotBlank]
-    #[Groups(["avis:read"])]
+    #[Groups(["avis:read", "avis:write"])]
     private ?string $username = null;
 
     #[ORM\Column(length: 500)]
@@ -35,7 +35,7 @@ class Avis
         maxMessage: "Le champ ne peut pas dépasser 60 caractères."
     )]
     #[Assert\NotBlank]
-    #[Groups(["avis:read"])]
+    #[Groups(["avis:read", "avis:write"])]
     private ?string $avis = null;
 
     #[ORM\Column(nullable: true)]

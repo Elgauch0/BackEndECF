@@ -2,13 +2,15 @@ services:
   symfony_app:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: zoobackend
-    image: elkaouri/zoobackendapi
+      dockerfile: Dockerfile.dev
+    container_name: zoobackenddev
     ports:
       - "8000:80"
+    volumes:
+      - .:/var/www/symfony
+      -  symfony_cache:/var/www/symfony/var/cache
     environment:
-      - APP_ENV=prod
+      - APP_ENV=dev
       - DATABASE_URL=mysql://app:password@bddmaria:3306/zoo_arcadia?serverVersion=mariadb-10.10.2&charset=utf8mb4
       - MONGODB_URL=mongodb://app:password@bddmongo:27017/zoo_arcadia?authSource=admin
       - MAILER_DSN=smtp://a73127d6fbae2f:580863dddb4430@sandbox.smtp.mailtrap.io:2525
@@ -18,8 +20,6 @@ services:
       - JWT_PASSPHRASE=password
     networks:
       - zoo-network
-    volumes:
-      -.:var/www/symfony:ro
     command: >
       sh -c "while ! nc -z bddmaria 3306; do echo 'Attente de MariaDB...'; sleep 2; done && \
              while ! nc -z bddmongo 27017; do echo 'Attente de MongoDB...'; sleep 2; done && \
@@ -61,10 +61,10 @@ services:
           - bddmongo
 
 volumes:
+  symfony_cache:
   mariadb-data:
   mongodb-data:
 
 networks:
   zoo-network:
     driver: bridge
-

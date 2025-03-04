@@ -47,7 +47,7 @@ class ReviewsController extends AbstractController
     #[Route('/reviews/add', name: 'add_Review', methods: 'Post')]
     public function addReview(Request $request): JsonResponse
     {
-        $reviewDTO = $this->serializer->deserialize($request->getContent(), Avis::class, 'json');
+        $reviewDTO = $this->serializer->deserialize($request->getContent(), Avis::class, 'json', ['avis:write']);
         $errors = $this->validator->validate($reviewDTO);
         if ($errors->count() > 0) {
             return new JsonResponse(['message' => 'validation failed'], JsonResponse::HTTP_BAD_REQUEST, []);
