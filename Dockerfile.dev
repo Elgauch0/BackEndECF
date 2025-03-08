@@ -43,8 +43,12 @@ RUN echo '<VirtualHost *:80>\n\
 # Définition du ServerName pour éviter les avertissements
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Création et configuration des répertoires de cache avec les bonnes permissions
+RUN mkdir -p /var/www/symfony/var/cache/dev/doctrine/odm/mongodb/Proxies \
+    && chown -R www-data:www-data /var/www/symfony/var/cache \
+    && chmod -R 775 /var/www/symfony/var/cache
+
 # Configuration du dossier de travail
 WORKDIR /var/www/symfony
-
 
 CMD ["apache2-foreground"]

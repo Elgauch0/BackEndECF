@@ -39,6 +39,8 @@ class HabitatController extends AbstractController
     }
 
 
+
+
     #[Route('/habitat/{id}', name: 'get_Habitat', methods: 'GET', requirements: ['id' => Requirement::POSITIVE_INT])]
     public function getAnimal(Habitat $habitat): JsonResponse
     {
@@ -167,6 +169,14 @@ class HabitatController extends AbstractController
         $this->em->remove($habitat);
         $this->em->flush();
         return $this->json(['message' => 'habitat removed'], JsonResponse::HTTP_NO_CONTENT);
+    }
+
+
+
+    #[Route('/test', name: 'app_test')]
+    public function index(): JsonResponse
+    {
+        return new jsonResponse('This controller works');
     }
 
 

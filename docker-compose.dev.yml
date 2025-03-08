@@ -8,7 +8,8 @@ services:
       - "8000:80"
     volumes:
       - .:/var/www/symfony
-      -  symfony_cache:/var/www/symfony/var/cache
+      # Modification clé : volume nommé pour le cache
+      - symfony_cache:/var/www/symfony/var/cache
     environment:
       - APP_ENV=dev
       - DATABASE_URL=mysql://app:password@bddmaria:3306/zoo_arcadia?serverVersion=mariadb-10.10.2&charset=utf8mb4
@@ -23,6 +24,10 @@ services:
     command: >
       sh -c "while ! nc -z bddmaria 3306; do echo 'Attente de MariaDB...'; sleep 2; done && \
              while ! nc -z bddmongo 27017; do echo 'Attente de MongoDB...'; sleep 2; done && \
+             # Ajout de commandes pour garantir les permissions
+             mkdir -p /var/www/symfony/var/cache/dev/doctrine/odm/mongodb/Proxies && \
+             chown -R www-data:www-data /var/www/symfony/var/cache && \
+             chmod -R 775 /var/www/symfony/var/cache && \
              php bin/console doctrine:migrations:migrate --no-interaction && \
              php bin/console doctrine:fixtures:load --no-interaction && \
              php bin/console cache:clear --env=prod && \
@@ -31,6 +36,7 @@ services:
       - bddmaria
       - bddmongo
 
+  # Reste de la configuration identique
   bddmaria:
     image: mariadb:10.10.2
     container_name: bddmaria
@@ -60,6 +66,7 @@ services:
         aliases:
           - bddmongo
 
+# Déclaration explicite du volume nommé
 volumes:
   symfony_cache:
   mariadb-data:
