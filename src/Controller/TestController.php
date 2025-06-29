@@ -10,6 +10,6 @@ class TestController
     #[Route('/', name: 'ping')]
     public function ping(): Response
     {
-        return new Response('THE app is upp');
+        return new Response(' El kaouri ,the server is is upp');
     }
 }
