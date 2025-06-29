@@ -156,4 +156,4 @@ pas de Licence
 
 ## Contact
 
-Vous pouvez me contacter pour quoi que ce soit au 0783749209. (Précisez si c'est un numéro de téléphone ou autre moyen de contact).
+Vous pouvez me contacter pour quoi que ce soit au 0783749209.

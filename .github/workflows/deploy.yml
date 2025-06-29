@@ -19,5 +19,6 @@ jobs:
           script: |
             cd /var/www/backEndECF
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            php bin/console cache:clear --env=prod
+            sudo systemctl restart apache2
+            sudo systemctl restart php8.2-fpm
