@@ -33,14 +33,14 @@ class HabitatController extends AbstractController
 
 
     #[Route('/habitat', name: 'get_Habitats', methods: 'GET')]
-    public function getHabitat(): JsonResponse
+    public function getHabitats(): JsonResponse
     {
         return $this->json($this->em->getRepository(Habitat::class)->findAll(), JsonResponse::HTTP_OK, [], ['groups' => ['habitat:read']]);
     }
 
 
     #[Route('/habitat/{id}', name: 'get_Habitat', methods: 'GET', requirements: ['id' => Requirement::POSITIVE_INT])]
-    public function getAnimal(Habitat $habitat): JsonResponse
+    public function getHabitat(Habitat $habitat): JsonResponse
     {
         return $this->json($habitat, JsonResponse::HTTP_OK, [], ['groups' => ['habitat:read']]);
     }
